@@ -15,6 +15,8 @@
 
 ---
 
+I created this web application to simplify file and folder management tasks. Using Node.js, Express.js, and EJS, I implemented features like uploading, downloading, deleting, and navigating through directories. With a responsive design powered by Bootstrap 5, the application offers an intuitive and efficient way to handle files.
+
 # :pushpin: Table of Contents
 
 * [Demo Website](#eyes-demo-website)
