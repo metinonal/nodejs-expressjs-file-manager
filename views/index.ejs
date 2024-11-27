@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosya Yöneticisi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Dosya Yöneticisi</h1>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/" class="btn btn-primary">Ana Sayfa</a>
+            <% if (currentDir) { %>
+                <p class="m-0">Geçerli Dizin:
+                    <% 
+                        const parts = currentDir.split('/'); 
+                        const maxVisible = 3; 
+                        const hiddenParts = parts.length > maxVisible ? parts.slice(0, parts.length - maxVisible) : [];
+                        const visibleParts = parts.slice(-maxVisible);
+                        let pathAccumulator = '';
+                    %>
+                    <% if (hiddenParts.length > 0) { %>
+                        <a href="/?dir=<%= hiddenParts.join('/') %>" class="text-decoration-none">
+                            <strong>...</strong>
+                        </a> /
+                    <% } %>
+                    <% visibleParts.forEach((part, index) => { %>
+                        <% pathAccumulator += (index === 0 && hiddenParts.length === 0 ? '' : '/') + part; %>
+                        <a href="/?dir=<%= pathAccumulator %>" class="text-decoration-none">
+                            <strong><%= part %></strong>
+                        </a>
+                        <% if (index < visibleParts.length - 1) { %>
+                            /
+                        <% } %>
+                    <% }); %>
+                </p>
+            <% } %>
+        </div>
+        <!-- Klasör ve Dosya İşlemleri -->
+        <div class="mb-4">
+            <!-- Klasör Oluştur Butonu -->
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createFolderModal">Klasör Oluştur</button>
+            
+            <!-- Dosya Yükleme Formu -->
+            <form action="/upload" method="POST" enctype="multipart/form-data" class="d-inline-block ms-3">
+                <input type="hidden" name="currentDir" value="<%= currentDir %>">
+                <label for="fileInput" class="btn btn-primary">Dosya Yükle</label>
+                <input type="file" id="fileInput" name="file" class="d-none" required onchange="this.form.submit()">
+            </form>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createFolderModalLabel">Yeni Klasör Oluştur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/create-folder" method="POST" id="createFolderForm">
+                            <input type="hidden" name="currentDir" value="<%= currentDir %>">
+                            <div class="mb-3">
+                                <label for="folderName" class="form-label">Klasör Adı</label>
+                                <input type="text" class="form-control" id="folderName" name="folderName" placeholder="Klasör adını girin" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" form="createFolderForm" class="btn btn-success">Klasör Oluştur</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listeleme -->
+        <ul class="list-group">
+            <% folders.concat(files).forEach(item => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <% if (folders.includes(item)) { %>
+                        <!-- Klasör -->
+                        <a href="/?dir=<%= currentDir ? currentDir + '/' : '' %><%= item %>">
+                            📁 <%= item %>
+                        </a>
+                        <div>
+                            <!-- Klasör Silme -->
+                            <form action="/delete" method="POST" class="d-inline-block">
+                                <input type="hidden" name="currentDir" value="<%= currentDir %>">
+                                <input type="hidden" name="itemName" value="<%= item %>">
+                                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                            </form>
+                        </div>
+                    <% } else { %>
+                        <!-- Dosya -->
+                        <a href="/<%= currentDir ? currentDir + '/' : '' %><%= item %>">
+                            📄 <%= item %>
+                        </a>
+                        <div>
+                            <!-- Dosya İndirme -->
+                            <a href="/download?file=<%= currentDir ? currentDir + '/' : '' %><%= item %>" class="btn btn-info btn-sm">İndir</a>
+                            
+                            <!-- Dosya Silme -->
+                            <form action="/delete" method="POST" class="d-inline-block">
+                                <input type="hidden" name="currentDir" value="<%= currentDir %>">
+                                <input type="hidden" name="itemName" value="<%= item %>">
+                                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                            </form>
+                        </div>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
+          
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
